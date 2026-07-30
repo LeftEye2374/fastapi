@@ -1,6 +1,9 @@
-from fastapi import FastAPI
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from fastapi import FastAPI, Depends
+from typing import Annotated
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, async_session, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
 
 engine = create_async_engine('sqlite+aiosqlite:///books.db')
 
@@ -11,6 +14,8 @@ app = FastAPI()
 async def get_session():
     async with new_session() as session:
         yield session
+
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 class Base(DeclarativeBase):
@@ -30,9 +35,23 @@ async def setup_database():
         await connection.run_sync(Base.metadata.create_all)
     return {"ok": True}
 
+class BookAddSchema(BaseModel):
+    title : str = Field()
+    author : str = Field()
+
+class BookSchema(BookAddSchema):
+    id : int
+
+
 @app.post("/books")
-async def add_boo():
-    ...
+async def add_book(data : BookAddSchema, session : SessionDep):
+    new_book = BookModel(
+        title = data.title,
+        author = data.author,
+    )
+    session.add(new_book)
+    await session.commit()
+    return {"ok": True}
 
 @app.get("/books")
 async def get_books():
