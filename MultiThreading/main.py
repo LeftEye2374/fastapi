@@ -2,6 +2,7 @@ import asyncio
 import time
 
 from fastapi import FastAPI
+from starlette.background import BackgroundTasks
 
 app = FastAPI()
 
@@ -14,7 +15,7 @@ async def async_task():
     print('Send request to another API')
 
 @app.post("/")
-async def some_func():
-    ...
-    await async_task()
+async def some_route(bg_tasks : BackgroundTasks):
+    bg_tasks.add_task(sync_task)
+#    asyncio.create_task(async_task())
     return {"ok" : True}
