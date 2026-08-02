@@ -12,3 +12,9 @@ def sync_task():
 async def async_task():
     await asyncio.sleep(3)
     print('Send request to another API')
+
+@app.post("/")
+async def some_func():
+    ...
+    await async_task()
+    return {"ok" : True}
