@@ -18,10 +18,10 @@ class UserLoginSchema(BaseModel):
 @app.post("/login")
 def login(creds: UserLoginSchema):
     if creds.username == "test" and creds.password == "test":
-        token = ...
+        token = security.create_access_token(uid="12345")
         return {"access_token": token}
     raise HTTPException(status_code=401, detail="Incorrect username or password")
- 
+
 @app.get("/protected")
 def protected():
     ...
