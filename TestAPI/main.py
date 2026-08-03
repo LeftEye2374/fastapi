@@ -48,5 +48,16 @@ def create_book(new_book: NewBook):
     })
     return {"success": True}
 
+@app.delete("/books/{id}",
+            tags=["Книги"],
+            summary="Удалить книгу"
+            )
+def delete_book(id : int):
+    for book in books:
+        if book["id"] == id:
+            books.remove(book)
+    return {"success": True}
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
