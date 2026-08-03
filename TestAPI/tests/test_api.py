@@ -9,4 +9,21 @@ async def test_get_books():
                            base_url="htpp://test",
                            ) as cl:
         response = await cl.get("/books")
-        print(response)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+
+@pytest.mark.asyncio
+async def test_post_books():
+    async with AsyncClient(
+            transport=ASGITransport(app = app),
+            base_url="htpp://test",
+    ) as cl:
+        response = await cl.post("/books", json= {
+            "title": "Nazvanie",
+            "author": "Author",
+        })
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data == {"success": True}
