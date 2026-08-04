@@ -2,17 +2,21 @@ from fastapi import HTTPException
 
 from src.schemas.user import UserUpdate, UserCreate
 from src.core.db_core import SessionDep
+from src.core.security.security import hash_password
 from src.schemas.user import UserRead
 from src.models.Models import Users
 
 class CRUDUser:
 
     async def create_user(self, data: UserCreate, session: SessionDep) -> UserRead:
-        user = await session.get()
-        user.name = data.name
-        user.email = data.email
-        user.password = data.password
+        user = Users(
+            name=data.name,
+            email=data.email,
+            hashed_password=await hash_password(data.password),
+        )
+        session.add(user)
         await session.commit()
+        await session.refresh(user)
         return UserRead.model_validate(user, from_attributes=True)
 
 
