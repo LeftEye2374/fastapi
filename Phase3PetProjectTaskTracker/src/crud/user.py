@@ -26,6 +26,12 @@ class CRUDUser:
             raise HTTPException(status_code=404, detail="User not found")
         return UserRead.model_validate(user, from_attributes=True)
 
+    async def get_user_by_email(self, email: str, session: SessionDep) -> UserCreate:
+        user = await session.get(Users, email)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return UserCreate.model_validate(user, from_attributes=True)
+
 
     async def update_user(self, id: int, data: UserUpdate, session: SessionDep) -> UserRead:
         user = await session.get(Users, id)

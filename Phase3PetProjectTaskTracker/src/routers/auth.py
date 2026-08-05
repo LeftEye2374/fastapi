@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from src.schemas.user import UserCreate, UserRead
 from src.crud.user import CRUDUser
 from src.core.db_core import SessionDep
-from src.core.security.security import security
+from src.core.security.security import security, verify_password
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -19,8 +19,10 @@ async def create_user(user: UserCreate, session : SessionDep):
     return {"User create is successful" : True}
 
 @router.post("/login")
-async def login_user(user: UserCreate):
-    ...
+async def login_user(user: UserCreate, session: SessionDep = Depends(security)):
+    current_user = await CRUDUser().get_user_by_email(user.email, session)
+    if verify_password(user.password, current_user.password):
+        security.create_access_token(data={"sub": user.email})
 
 async def get_current_user_dependency(
     session: SessionDep,
