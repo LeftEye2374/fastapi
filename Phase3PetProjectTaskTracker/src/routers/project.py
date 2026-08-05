@@ -15,26 +15,22 @@ async def create_project(project: ProjectCreate, session : SessionDep,  current_
     new_project = ProjectCreate(
         name=project.name,
     )
-    await CRUDProject().create_project(new_project, current_user.id, session)
-    return {"Proejct create is successful" : True}
+    return await CRUDProject().create_project(new_project, current_user.id, session)
 
 
 @router.get("/all")
-async def get_all_project():
-    ...
+async def get_all_project(session: SessionDep, current_user: UserRead = Depends(get_current_user_dependency)):
+    return await CRUDProject().list_projects(current_user.id, session)
 
 @router.get("/{id}")
 async def get_project_by_id(id : int, session : SessionDep, current_user: UserRead = Depends(get_current_user_dependency)):
-    await CRUDProject().get_project(id, current_user.id, session)
-    return {"Proejct" : True}
+    return await CRUDProject().get_project(id, current_user.id, session)
 
 @router.put("/{id}")
 async def update_project(id : int, session : SessionDep, data : ProjectUpdate, current_user: UserRead = Depends(get_current_user_dependency)):
-    await CRUDProject().update_project(id, current_user.id, data, session)
-    return {"Proejct update is successful" : True}
+    return await CRUDProject().update_project(id, current_user.id, data, session)
 
 @router.delete("/{id}")
 async def delete_project(id : int, session : SessionDep, current_user: UserRead = Depends(get_current_user_dependency)):
-    await CRUDProject().delete_project(id, current_user.id, session)
-    return {"Proejct is deleted" : True}
+    return await CRUDProject().delete_project(id, current_user.id, session)
 

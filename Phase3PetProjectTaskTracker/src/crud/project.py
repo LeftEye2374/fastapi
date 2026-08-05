@@ -47,5 +47,6 @@ class CRUDProject:
         return ProjectRead.model_validate(project, from_attributes=True)
 
     async def list_projects(self, owner_id: int, session: SessionDep) -> list[ProjectRead]:
-        list_projects = select(Projects).where(Projects.owner_id == owner_id)
-        return await session.execute(list_projects)
+        result = await session.execute(select(Projects).where(Projects.owner_id == owner_id))
+        projects = result.scalars().all()
+        return [ProjectRead.model_validate(p, from_attributes=True) for p in projects]
