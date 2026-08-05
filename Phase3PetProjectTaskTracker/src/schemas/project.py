@@ -7,9 +7,10 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     pass
 
-class ProjectReade(ProjectBase):
+class ProjectRead(ProjectBase):
     id : int
     owner_id : int
 
 class ProjectUpdate(ProjectBase):
     pass
+
