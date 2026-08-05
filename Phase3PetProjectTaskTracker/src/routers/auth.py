@@ -1,5 +1,8 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from fastapi import APIRouter
+
+from src.schemas.token import Token
+from src.schemas.user import UserLogin
 from src.schemas.user import UserCreate, UserRead
 from src.crud.user import CRUDUser
 from src.core.db_core import SessionDep
@@ -19,10 +22,12 @@ async def create_user(user: UserCreate, session : SessionDep):
     return {"User create is successful" : True}
 
 @router.post("/login")
-async def login_user(user: UserCreate, session: SessionDep = Depends(security)):
+async def login_user(user: UserLogin, session: SessionDep):
     current_user = await CRUDUser().get_user_by_email(user.email, session)
-    if verify_password(user.password, current_user.password):
-        security.create_access_token(data={"sub": user.email})
+    if not current_user or not await verify_password(user.password, current_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    token = security.create_access_token(uid=str(current_user.id))
+    return Token(access_token=token, token_type="bearer")
 
 async def get_current_user_dependency(
     session: SessionDep,
