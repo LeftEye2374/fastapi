@@ -11,10 +11,6 @@ from sqlalchemy.pool import StaticPool
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-# Импорт src.main тянет за собой routers -> crud -> src.models.Models,
-# поэтому все таблицы успевают зарегистрироваться в Base.metadata
-# до того, как ниже вызывается create_all (та же история, что была
-# с target_metadata в alembic/env.py).
 from src.main import app
 from src.core.db_core import Base, get_session
 
@@ -84,3 +80,28 @@ async def auth_headers(client):
 
     client.cookies.set("my_access_token", token)
     return {"X-CSRF-Token": csrf}
+
+
+@pytest_asyncio.fixture
+async def other_user_headers(client):
+    """Второй, отдельный пользователь — для проверок доступа к ЧУЖИМ
+    ресурсам (403). Не трогает client.cookies (там уже сидит пользователь
+    из auth_headers) — токен и csrf отдаются наружу, передавай их в
+    конкретный запрос через cookies=.../headers=..., а не через client."""
+    await client.post(
+        "/auth/register",
+        json={"email": "other_user@test.com", "name": "Other User", "password": "pass1234"},
+    )
+    response = await client.post(
+        "/auth/login",
+        json={"email": "other_user@test.com", "password": "pass1234"},
+    )
+    token = response.json()["access_token"]
+
+    payload = jwt.decode(token, options={"verify_signature": False})
+    csrf = payload["csrf"]
+
+    return {
+        "cookies": {"my_access_token": token},
+        "headers": {"X-CSRF-Token": csrf},
+    }

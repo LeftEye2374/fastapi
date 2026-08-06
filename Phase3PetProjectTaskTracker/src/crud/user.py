@@ -1,5 +1,6 @@
-from fastapi import HTTPException
 
+from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 from src.schemas.user import UserUpdate, UserCreate
 from src.core.db_core import SessionDep
 from src.core.security.security import hash_password
@@ -16,7 +17,11 @@ class CRUDUser:
             hashed_password=await hash_password(data.password),
         )
         session.add(user)
-        await session.commit()
+        try:
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+            raise HTTPException(status_code=409, detail="Email already registered")
         await session.refresh(user)
         return UserRead.model_validate(user, from_attributes=True)
 
