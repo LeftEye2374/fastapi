@@ -62,9 +62,6 @@ async def client(db_session):
 
     app.dependency_overrides.clear()
 
-
-
-
 @pytest_asyncio.fixture
 async def auth_headers(client):
     """Регистрирует и логинит тестового пользователя.
