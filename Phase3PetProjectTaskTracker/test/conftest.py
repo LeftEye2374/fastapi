@@ -25,6 +25,7 @@ class TestSettings(BaseSettings):
 
     class Config:
         env_file = PROJECT_ROOT / ".env"
+        extra = "ignore"
 
 
 test_settings = TestSettings()
