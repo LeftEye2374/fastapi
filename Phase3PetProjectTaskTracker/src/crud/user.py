@@ -18,6 +18,7 @@ class CRUDUser:
         )
         try:
             session.add(user)
+
             await session.commit()
         except IntegrityError:
             await session.rollback()
