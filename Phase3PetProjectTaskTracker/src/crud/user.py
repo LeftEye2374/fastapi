@@ -16,8 +16,8 @@ class CRUDUser:
             email=data.email,
             hashed_password=await hash_password(data.password),
         )
-        session.add(user)
         try:
+            session.add(user)
             await session.commit()
         except IntegrityError:
             await session.rollback()
