@@ -2,7 +2,7 @@ from fastapi import HTTPException
 
 from src.schemas.task import TaskCreate, TaskUpdate, TaskRead
 from src.core.db_core import SessionDep
-from src.models.Models import Tasks
+from src.models.Models import Tasks, Projects
 from sqlalchemy import select
 
 
@@ -22,7 +22,7 @@ class CRUDTask:
         await session.refresh(task)
         return TaskRead.model_validate(task, from_attributes=True)
 
-    async def update_task(self, task_id : int, data : TaskUpdate, assignee_id: int, current_user_id : int, session : SessionDep ) -> TaskRead:
+    async def update_task(self, task_id : int, data : TaskUpdate, assignee_id: int | None, current_user_id : int, session : SessionDep ) -> TaskRead:
         task = await session.get(Tasks, task_id)
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
@@ -47,7 +47,13 @@ class CRUDTask:
         await session.delete(task)
         await session.commit()
 
-    async def get_all_tasks_of_project(self, project_id: int, session: SessionDep) -> list[TaskRead]:
+    async def get_all_tasks_of_project(self, project_id: int, current_user_id: int, session: SessionDep) -> list[TaskRead]:
+        project = await session.get(Projects, project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        if project.owner_id != current_user_id:
+            raise HTTPException(status_code=403, detail="Not your project")
+
         result = await session.execute(select(Tasks).where(Tasks.project_id == project_id))
         tasks = result.scalars().all()
         return [TaskRead.model_validate(t, from_attributes=True) for t in tasks]

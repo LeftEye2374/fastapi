@@ -17,4 +17,4 @@ class TaskRead(TaskBase):
     assignee_id: int | None
 
 class TaskUpdate(TaskBase):
-    pass
+    assignee_id: int | None = None
