@@ -26,8 +26,22 @@ async def test_get_all_project(client, auth_headers, other_user_headers):
 
     response = await client.get("/projects/all", headers=auth_headers)
     assert response.status_code == 200
-    names = [p["name"] for p in response.json()]
+    body = response.json()
+    assert body["total"] == 1
+    names = [p["name"] for p in body["items"]]
     assert names == ["Mine"]
+
+
+@pytest.mark.asyncio
+async def test_get_all_project_pagination(client, auth_headers):
+    for i in range(3):
+        await client.post("/projects/", json={"name": f"P{i}"}, headers=auth_headers)
+
+    response = await client.get("/projects/all?limit=2&offset=1", headers=auth_headers)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 3
+    assert len(body["items"]) == 2
 
 
 @pytest.mark.asyncio

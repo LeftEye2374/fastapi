@@ -19,8 +19,13 @@ async def create_project(project: ProjectCreate, session : SessionDep,  current_
 
 
 @router.get("/all")
-async def get_all_project(session: SessionDep, current_user: UserRead = Depends(get_current_user_dependency)):
-    return await CRUDProject().list_projects(current_user.id, session)
+async def get_all_project(
+    session: SessionDep,
+    current_user: UserRead = Depends(get_current_user_dependency),
+    limit: int = 20,
+    offset: int = 0,
+):
+    return await CRUDProject().list_projects(current_user.id, session, limit, offset)
 
 @router.get("/{id}")
 async def get_project_by_id(id : int, session : SessionDep, current_user: UserRead = Depends(get_current_user_dependency)):

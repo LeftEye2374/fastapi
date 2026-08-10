@@ -14,3 +14,7 @@ class ProjectRead(ProjectBase):
 class ProjectUpdate(ProjectBase):
     pass
 
+class ProjectList(BaseModel):
+    items: list[ProjectRead]
+    total: int
+

@@ -74,8 +74,33 @@ async def test_get_all_tasks_of_project(client, auth_headers, project_with_task)
 
     response = await client.get(f"/tasks/all?project_id={project_id}", headers=auth_headers)
     assert response.status_code == 200
-    ids = [t["id"] for t in response.json()]
+    body = response.json()
+    assert body["total"] == 1
+    ids = [t["id"] for t in body["items"]]
     assert ids == [task_id]
+
+
+@pytest.mark.asyncio
+async def test_get_all_tasks_filter_by_status(client, auth_headers, project_with_task):
+    project_id, task_id = project_with_task
+    await client.put(
+        f"/tasks/{task_id}",
+        json={"title": "T", "description": "d", "deadline": "2026-01-01", "status": "done"},
+        headers=auth_headers,
+    )
+    await client.post(
+        f"/tasks/?project_id={project_id}",
+        json={"title": "T2", "description": "d", "deadline": "2026-01-01", "status": "todo"},
+        headers=auth_headers,
+    )
+
+    response = await client.get(
+        f"/tasks/all?project_id={project_id}&status=done", headers=auth_headers
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 1
+    assert body["items"][0]["id"] == task_id
 
 
 @pytest.mark.asyncio
