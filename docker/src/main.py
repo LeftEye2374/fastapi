@@ -14,8 +14,8 @@ if not logger.handlers:
     _handler = logging.StreamHandler()
     _handler.setFormatter(logging.Formatter("%(asctime)s %(name)s %(message)s"))
     logger.addHandler(_handler)
-
 app = FastAPI()
+
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
