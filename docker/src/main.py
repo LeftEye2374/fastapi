@@ -17,7 +17,6 @@ if not logger.handlers:
 
 app = FastAPI()
 
-
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start = time.perf_counter()
